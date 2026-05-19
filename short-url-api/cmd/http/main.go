@@ -1,18 +1,26 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
-	shorten "short-url-api/internal/http/handlers"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"short-url-api/internal/database/sql"
+	"short-url-api/internal/http/handlers/shorten"
 )
 
 func main() {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Post("/", shorten.Shorten)
-	fmt.Println("listen on port :3000")
-	http.ListenAndServe(":3000", r)
+	db, err := sql.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	shortenHandler := shorten.NewHandler(db)
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("POST /shorten", shortenHandler.Shorten)
+	mux.HandleFunc("GET /{code}", shortenHandler.GetUnshorten)
+
+	log.Println("server running on :8080")
+	http.ListenAndServe(":8080", mux)
 }
