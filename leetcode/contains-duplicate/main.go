@@ -20,7 +20,6 @@ func containsDuplicate(nums []int) bool {
 
 func main() {
 
-	//drive
 	nums := []int{1,2,3,}
 
 	fmt.Println(containsDuplicate(nums))
